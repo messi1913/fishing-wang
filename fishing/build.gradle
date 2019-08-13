@@ -2,8 +2,8 @@ plugins {
     id 'org.asciidoctor.convert' version '1.5.3'
     id 'org.springframework.boot' version '2.1.6.RELEASE'
     id 'java'
-    id 'nu.studer.jooq' version '3.0.3'
     id 'com.bmuschko.docker-spring-boot-application' version '4.10.0'
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -65,14 +65,12 @@ build {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
-//    implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.session:spring-session-core'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-jooq'
     implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.5.RELEASE'
-//    implementation 'de.codecentric:spring-boot-admin-starter-client'
     implementation 'org.modelmapper:modelmapper:2.3.1'
     implementation 'com.vladmihalcea:hibernate-types-5:1.2.0'
     implementation 'com.google.code.gson:gson:2.8.5'
@@ -88,54 +86,32 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testImplementation 'org.springframework.security:spring-security-test'
     asciidoctor 'org.springframework.restdocs:spring-restdocs-asciidoctor'
-    jooqRuntime 'mysql:mysql-connector-java'
+    implementation 'com.querydsl:querydsl-jpa'
+    implementation 'com.querydsl:querydsl-apt'
 }
 
-//dependencyManagement {
-//    imports {
-//        mavenBom "de.codecentric:spring-boot-admin-dependencies:${springBootAdminVersion}"
-//    }
-//}
 
-test {
-    outputs.dir snippetsDir
+//Query DSL
+def querydslSrcDir = 'src/main/generated'
+
+querydsl {
+    library = "com.querydsl:querydsl-apt"
+    jpa = true
+    querydslSourcesDir = querydslSrcDir
 }
 
-asciidoctor {
-    inputs.dir snippetsDir
-    dependsOn test
+compileQuerydsl{
+    options.annotationProcessorPath = configurations.querydsl
 }
 
-//JOOQ 설정
-jooq {
-    fishing(sourceSets.main) {
-        jdbc {
-            driver = 'com.mysql.jdbc.Driver'
-            url = 'jdbc:mysql://45.77.22.61:5306/fishing_reservation?serverTimezone=UTC'
-            user = 'maldini'
-            password = 'tjalswns#14rlaalsgh#16'
-            schema = 'fishing_reservation'
-        }
-        generator {
-            database {
-                name = 'org.jooq.meta.mysql.MySQLDatabase'
-                inputSchema = 'fishing_reservation'
-                forcedTypes{
-                    forcedType{
-                        userType = 'com.google.gson.JsonElement'
-                        binding = 'com.ddastudio.fishing.common.converter.JsonColumnBinding'
-                        types = 'json'
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
 
-                    }
-                }
-            }
-            target {
-                packageName = 'com.ddastudio.fishing.jooq'
-                directory = "src/main/java"
-            }
-            generate {
-                javaTimeTypes = true
-            }
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', querydslSrcDir]
         }
     }
 }

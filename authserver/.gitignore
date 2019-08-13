@@ -132,3 +132,4 @@ HELP.md
 !**/src/main/**
 
 # End of https://www.gitignore.io/api/java,gradle,intellij
+/.gradle/
