@@ -127,4 +127,9 @@ gradle-app.setting
 ### Gradle Patch ###
 **/build/
 
+HELP.md
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**
+!**/src/test/**
+
 # End of https://www.gitignore.io/api/java,gradle,intellij
