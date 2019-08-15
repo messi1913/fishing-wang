@@ -53,7 +53,7 @@ public class AccountService implements UserDetailsService {
     public AccountDTO requestSmsService(AccountDTO accountDTO) {
         log.info("==== Register Account ====");
         Account account = this.accountRepository.findByPhoneNoAndAuditUseYn(accountDTO.getPhoneNo(), USE)
-                .orElseGet(() -> modelMapper.map(accountDTO, Account.class));
+                .orElseGet(() -> this.accountRepository.save(modelMapper.map(accountDTO, Account.class)));
         String sms;
         if (CommonUtil.getProperty("sms.test.use", "N").equals("Y")) {
             sms = "123456";
@@ -64,7 +64,6 @@ public class AccountService implements UserDetailsService {
         account.setAccountStatus("REQ");
         LocalDateTime now = LocalDateTime.now();
         account.setSmsPublishDateTime(now);
-        //return modelMapper.map(accountRepository.save(account), AccountDTO.class);
         return modelMapper.map(account, AccountDTO.class);
     }
 
@@ -75,9 +74,8 @@ public class AccountService implements UserDetailsService {
         account.validateSmsCode(accountDTO.getSmsVerifyNo());
         String password = passwordEncoder.encode(accountDTO.getSmsVerifyNo());
         account.confirm(password);
-        AccountDTO savedDTO = modelMapper.map(account, AccountDTO.class);
-        this.getOauthTokens(savedDTO);
-        return savedDTO;
+        account = this.accountRepository.save(account);
+        return modelMapper.map(account, AccountDTO.class);
     }
 
     @Transactional
@@ -105,7 +103,7 @@ public class AccountService implements UserDetailsService {
         return syncAccountDTO;
     }
 
-    private void getOauthTokens(AccountDTO accountDTO) throws FishingValidationException {
+    public void getOauthTokens(AccountDTO accountDTO) throws FishingValidationException {
         Map<String, Object> oauthToken = CommonUtil.requestOauth(accountDTO.getPhoneNo(), accountDTO.getSmsVerifyNo());
         String accessToken = String.valueOf(oauthToken.get("access_token"));
         if (Objects.isNull(accessToken))

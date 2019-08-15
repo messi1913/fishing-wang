@@ -41,6 +41,7 @@ public class Account implements Auditable {
     private String accountStatus;
     private String smsVerifyNo;
     private LocalDateTime smsPublishDateTime;
+    private String pushToken;
 
 
     @Embedded

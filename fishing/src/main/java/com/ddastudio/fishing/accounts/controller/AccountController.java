@@ -44,6 +44,7 @@ public class AccountController {
         log.info("===== Controller : Confirm sms of account =====");
         validator.validateForConfirm(accountDTO);
         AccountDTO dto = this.service.confirmAccount(accountDTO);
+        this.service.getOauthTokens(dto);
         var resource = new AccountResource(dto);
         resource.add(linkTo(AccountController.class).withSelfRel());
         resource.add(new Link("/docs/account.html#resources-account-confirm").withRel("profile"));

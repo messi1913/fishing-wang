@@ -40,6 +40,7 @@ public class Account implements Auditable {
     private String accountStatus;
     private String smsVerifyNo;
     private String smsPublishDateTime;
+    private String pushToken;
 
     @Embedded
     private Audit audit;
